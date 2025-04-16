@@ -56,10 +56,22 @@ l10n/
 *.jpeg
 *.png
 *.PNG
+<<<<<<< HEAD
 *.mp4
 # deeplearning
 *.pt
 *.pth
+=======
+<<<<<<< HEAD
+# deeplearning
+*.pt
+=======
+*.mp4
+# deeplearning
+*.pt
+*.pth
+>>>>>>> ecd5135 (match and align images)
+>>>>>>> 1e80a89 (match and align images)
 sandbox*
 
 
