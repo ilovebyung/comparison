@@ -206,12 +206,30 @@ if __name__ == '__main__':
 
     # match and align images
     template = cv2.imread('template.jpg', 0)
-    image = cv2.imread('sample.jpg', 0)
+    # image = cv2.imread('sample.jpg', 0)
     
     plt.imshow(template, cmap='gray')
-    plt.imshow(image, cmap='gray')
+    # plt.imshow(image, cmap='gray')
     
-    result = match_and_align_image(image, template)
+    # result = match_and_align_image(image, template)
+    # plt.imshow(result, cmap='gray')
+
+    # Save mached images
+    template = cv2.imread('/home/byungsoo/Documents/comparison/template.jpg', 0)
+
+    os.chdir('/home/byungsoo/Documents/comparison/Pictures_Grayscale')
+    files = os.listdir('/home/byungsoo/Documents/comparison/Pictures_Grayscale')
+
+    # os.chdir('/home/byungsoo/Documents/comparison/Pictures_Grayscale/backup')
+    # files = os.listdir('/home/byungsoo/Documents/comparison/Pictures_Grayscale/backup')
+
+    for file in files:
+        if file.endswith('.jpg'):
+            image = cv2.imread(file, 0)
+            result = match_and_align_image(image, template)
+            cv2.imwrite(f'/home/byungsoo/Documents/comparison/Pictures_Matched/{file}', result)
+            # cv2.imwrite(f'/home/byungsoo/Documents/comparison/Pictures_Matched/backup/{file}', result)
+            
     plt.imshow(result, cmap='gray')
 >>>>>>> ecd5135 (match and align images)
 >>>>>>> 1e80a89 (match and align images)

@@ -186,11 +186,7 @@ plt.imshow(difference, cmap='magma')
 input_image.astype(np.float32)
 =======
 plt.imshow(difference_image, cmap='magma')
-<<<<<<< HEAD
-plt.title("Reconstructed Image")
-=======
 plt.title("Difference Image")
->>>>>>> ecd5135 (match and align images)
 plt.axis('off')
 plt.show()
 >>>>>>> 1e80a89 (match and align images)
