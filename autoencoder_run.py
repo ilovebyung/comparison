@@ -65,6 +65,6 @@ difference = util.check_difference(input_image, reconstructed_image)
 
 # Save the image before displaying it
 plt.imshow(difference, cmap='magma')
-plt.axis('off')  # Optional: removes axis for a cleaner image
-plt.savefig('saved_difference.png', dpi=300, bbox_inches='tight')
-plt.show()
+
+
+# input_image.astype(np.float32)
