@@ -1,4 +1,5 @@
 import os
+import cv2
 import numpy as np
 import torch
 import torch.nn as nn
@@ -6,17 +7,18 @@ import torch.optim as optim
 from torchvision import transforms
 from torch.utils.data import DataLoader, Dataset
 import matplotlib.pyplot as plt
-from PIL import Image, UnidentifiedImageError
+from PIL import Image
 
 # Define a dataset
 class Dataset(Dataset):
     """
     A PyTorch Dataset class to load grayscale images from a directory.
     """
-    def __init__(self, img_dir='Pictures_Grayscale', transform=None):
+    def __init__(self, img_dir='Pictures_Grayscale', size=(1280, 720), transform=None):
         self.img_dir = img_dir
+        self.size = size
         self.transform = transform if transform else transforms.Compose([
-            transforms.Resize((1280, 720)),  # Resize images
+            transforms.Resize(self.size),  # (1280, 720) (800,400)
             transforms.ToTensor()
         ])
 
@@ -57,7 +59,8 @@ class Autoencoder(nn.Module):
         return decoded
 
 # Initialize dataset and dataloader
-dataset = Dataset(img_dir='Pictures_Grayscale')
+# dataset = Dataset(img_dir='Pictures_Grayscale', size=(1280, 720))
+dataset = Dataset(img_dir='Pictures_Matched', size=(800,400))
 dataloader = DataLoader(dataset, batch_size=10, shuffle=True)
 
 # Initialize model, optimizer, and loss function
@@ -69,7 +72,7 @@ criterion = nn.MSELoss()
 epoch_losses = []
 
 # Training loop
-num_epochs = 20
+num_epochs = 40
 for epoch in range(num_epochs):
     epoch_loss = 0.0
     for batch in dataloader:
@@ -129,21 +132,22 @@ autoencoder_reload.load_state_dict(torch.load("autoencoder.pth"))
 print("Model reloaded!")
 
 # Verify model reload
-image_file = '/home/byungsoo/Documents/comparison/Pictures_Grayscale/backup/grayscale_WIN_20250414_12_50_42_Pro.jpg'
-image = plt.imread(image_file)
+# image_file = '/home/byungsoo/Documents/comparison/Pictures_Grayscale/backup/grayscale_WIN_20250414_12_50_42_Pro.jpg'
+image_file = '/home/byungsoo/Documents/comparison/Pictures_Matched/backup/grayscale_WIN_20250414_12_50_42_Pro.jpg'
+input_image = plt.imread(image_file)
 
-plt.imshow(image, cmap='gray')
+plt.imshow(input_image, cmap='gray')
 plt.title("Input Image")
 plt.axis('off')
 plt.show()
 
-input_image = torch.tensor(image, dtype=torch.float32).unsqueeze(0).unsqueeze(0) / 255.0
-output_image = autoencoder_reload(input_image)
-reconstructed_image = output_image.detach().numpy()
+# Generate reconstructed image
+input = torch.tensor(image_image, dtype=torch.float32).unsqueeze(0).unsqueeze(0) / 255.0
+output = autoencoder_reload(input)
+reconstructed_image = output.detach().numpy()
 reconstructed_image = reconstructed_image.squeeze()
 
-
-print("Input shape:", input_image.shape)
+print("Input shape:", input.shape)
 print("Output shape:", reconstructed_image.shape)
 
 plt.imshow(reconstructed_image, cmap='gray')
@@ -151,19 +155,31 @@ plt.title("Reconstructed Image")
 plt.axis('off')
 plt.show()
 
-
-
 # Calculate reconstruction error
 # Mean Absolute Error (MAE): This calculates the average absolute difference between the input and output.
 
-reconstruction_error = torch.mean(torch.abs(output_image - input_image))
+reconstruction_error = torch.mean(torch.abs(output - input))
 print("Reconstruction Error (MAE):", reconstruction_error.item())
 
 # Compute the difference
 difference_image = np.abs(input_image - reconstructed_image)
 difference_image = difference_image.squeeze()
+plt.imshow(difference_image, cmap='gray')
 
-plt.imshow(difference_image, cmap='magma')
-plt.title("Difference Image")
-plt.axis('off')
-plt.show()
+reconstructed_int = (reconstructed_image * 255).astype(int)
+
+plt.imshow(input_image, cmap='gray')
+plt.imshow(reconstructed_int, cmap='gray')
+
+input_image_int = (input_image).astype(int)
+
+image_a = cv2.subtract(input_image_int, reconstructed_int)
+image_b = cv2.subtract(reconstructed_int, input_image_int)
+difference = cv2.absdiff(image_a, image_b)
+
+plt.imshow(image_a, cmap='magma')
+plt.imshow(image_b, cmap='magma')
+plt.imshow(difference, cmap='magma')
+
+
+input_image.astype(np.float32)
