@@ -1,4 +1,4 @@
-import os
+import util
 import cv2
 import numpy as np
 import torch
@@ -39,50 +39,32 @@ print("Model reloaded!")
 
 ## Verify model reload
 # OK image
-image_file = '/home/byungsoo/Documents/comparison/Pictures_Matched/backup/ok.jpg'
+image_file = 'Pictures_Matched/grayscale_WIN_20250414_12_54_14_Pro.jpg'
 # NG image
-image_file = '/home/byungsoo/Documents/comparison/Pictures_Matched/backup/defect_05.jpg'
+image_file = '/home/byungsoo/Documents/comparison/samples/defect_05.jpg'
 input_image = plt.imread(image_file)
-
 plt.imshow(input_image, cmap='gray')
 
 # Generate reconstructed image
-input = torch.tensor(input_image, dtype=torch.float32).unsqueeze(0).unsqueeze(0) / 255.0
-output = autoencoder(input)
-reconstructed_image = output.detach().numpy()
-reconstructed_image = reconstructed_image.squeeze()
+def reconstruct_image(input_image):
+    input = torch.tensor(input_image, dtype=torch.float32).unsqueeze(0).unsqueeze(0) / 255.0
+    output = autoencoder(input)
+    reconstructed_image = output.detach().numpy()
+    reconstructed_image = reconstructed_image.squeeze()
+    reconstruction_error = torch.mean(torch.abs(output - input))
+    return reconstructed_image, reconstruction_error
 
-print("Input shape:", input.shape)
-print("Output shape:", reconstructed_image.shape)
+reconstructed_image, reconstruction_error = reconstruct_image(input_image)
 
 plt.imshow(reconstructed_image, cmap='gray')
 
-
 ## Calculate reconstruction error
-# Mean Absolute Error (MAE): This calculates the average absolute difference between the input and output.
-
-reconstruction_error = torch.mean(torch.abs(output - input))
 print("Reconstruction Error (MAE):", reconstruction_error.item())
 
-## Compute the difference
-# difference_image = np.abs(input_image - reconstructed_image)
-# difference_image = difference_image.squeeze()
-# plt.imshow(difference_image, cmap='gray')
+difference = util.check_difference(input_image, reconstructed_image)
 
-reconstructed_int = (reconstructed_image * 255).astype(int)
-
-plt.imshow(input_image, cmap='gray')
-plt.imshow(reconstructed_int, cmap='gray')
-
-input_image_int = (input_image).astype(int)
-
-image_a = cv2.subtract(input_image_int, reconstructed_int)
-image_b = cv2.subtract(reconstructed_int, input_image_int)
-difference = cv2.absdiff(image_a, image_b)
-
-plt.imshow(image_a, cmap='magma')
-plt.imshow(image_b, cmap='magma')
+# Save the image before displaying it
 plt.imshow(difference, cmap='magma')
-
-
-# input_image.astype(np.float32)
+plt.axis('off')  # Optional: removes axis for a cleaner image
+plt.savefig('saved_difference.png', dpi=300, bbox_inches='tight')
+plt.show()

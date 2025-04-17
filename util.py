@@ -136,28 +136,54 @@ def match_and_align_image(image, template):
     
     return aligned_image
 
+def check_difference(input_image, reconstructed_image):
+    # Ensure inputs are NumPy arrays
+    if not isinstance(input_image, np.ndarray) or not isinstance(reconstructed_image, np.ndarray):
+        raise TypeError("Both input and reconstructed images must be NumPy arrays.")
+
+    # Check if images have the same shape
+    if input_image.shape != reconstructed_image.shape:
+        raise ValueError("Input and reconstructed images must have the same shape.")
+
+    # Normalize input image if values are in [0, 1] range
+    if input_image.max() <= 1.0:
+        input_image = (input_image * 255).astype(np.uint8)
+    else:
+        input_image = input_image.astype(np.uint8)
+
+    # Normalize reconstructed image if values are in [0, 1] range
+    if reconstructed_image.max() <= 1.0:
+        reconstructed_image = (reconstructed_image * 255).astype(np.uint8)
+    else:
+        reconstructed_image = reconstructed_image.astype(np.uint8)
+
+    # Compute absolute difference
+    # image_a = cv2.subtract(input_image, reconstructed_image)
+    # image_b = cv2.subtract(reconstructed_image, input_image)
+    # difference = cv2.absdiff(image_a, image_b)
+    diffrence = cv2.absdiff(input_image, reconstructed_image)
+    difference = cv2.applyColorMap(diffrence, cv2.COLORMAP_MAGMA)
+
+    return difference
+
+# def reconstruct_image(input_image):
+#     input = torch.tensor(input_image, dtype=torch.float32).unsqueeze(0).unsqueeze(0) / 255.0
+#     output = autoencoder(input)
+#     reconstructed_image = output.detach().numpy()
+#     reconstructed_image = reconstructed_image.squeeze()
+#     reconstruction_error = torch.mean(torch.abs(output - input))
+#     return reconstructed_image, reconstruction_error
+
 if __name__ == '__main__':
-    # You can change the directory names here if needed
+    ## You can change the directory names here if needed
     convert_images_to_grayscale(input_dir='Pictures', output_dir='Pictures_Grayscale')
 
-    # match and align images
-    template = cv2.imread('template.jpg', 0)
-    # image = cv2.imread('sample.jpg', 0)
-    
-    plt.imshow(template, cmap='gray')
-    # plt.imshow(image, cmap='gray')
-    
-    # result = match_and_align_image(image, template)
-    # plt.imshow(result, cmap='gray')
-
-    # Save mached images
+    ## matched images
     template = cv2.imread('/home/byungsoo/Documents/comparison/template.jpg', 0)
+    plt.imshow(template, cmap='gray')
 
     os.chdir('/home/byungsoo/Documents/comparison/Pictures_Grayscale')
     files = os.listdir('/home/byungsoo/Documents/comparison/Pictures_Grayscale')
-
-    # os.chdir('/home/byungsoo/Documents/comparison/Pictures_Grayscale/backup')
-    # files = os.listdir('/home/byungsoo/Documents/comparison/Pictures_Grayscale/backup')
 
     for file in files:
         if file.endswith('.jpg'):
@@ -168,5 +194,9 @@ if __name__ == '__main__':
             # cv2.imwrite(f'/home/byungsoo/Documents/comparison/Pictures_Matched/backup/{file}', result)
             
     plt.imshow(result, cmap='gray')
+
+
+
+
 
     
