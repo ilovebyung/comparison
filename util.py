@@ -158,12 +158,11 @@ def check_difference(input_image, reconstructed_image):
         reconstructed_image = reconstructed_image.astype(np.uint8)
 
     # Compute absolute difference
-    # image_a = cv2.subtract(input_image, reconstructed_image)
-    # image_b = cv2.subtract(reconstructed_image, input_image)
-    # difference = cv2.absdiff(image_a, image_b)
-    diffrence = cv2.absdiff(input_image, reconstructed_image)
-    difference = cv2.applyColorMap(diffrence, cv2.COLORMAP_MAGMA)
-
+    image_a = cv2.subtract(input_image, reconstructed_image)
+    image_b = cv2.subtract(reconstructed_image, input_image)
+    difference = cv2.absdiff(image_a, image_b)
+    # difference = cv2.absdiff(input_image, reconstructed_image)
+    # difference = cv2.applyColorMap(difference, cv2.COLORMAP_MAGMA)
     return difference
 
 # def reconstruct_image(input_image):
