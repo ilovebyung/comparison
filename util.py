@@ -165,14 +165,6 @@ def check_difference(input_image, reconstructed_image):
     # difference = cv2.applyColorMap(difference, cv2.COLORMAP_MAGMA)
     return difference
 
-# def reconstruct_image(input_image):
-#     input = torch.tensor(input_image, dtype=torch.float32).unsqueeze(0).unsqueeze(0) / 255.0
-#     output = autoencoder(input)
-#     reconstructed_image = output.detach().numpy()
-#     reconstructed_image = reconstructed_image.squeeze()
-#     reconstruction_error = torch.mean(torch.abs(output - input))
-#     return reconstructed_image, reconstruction_error
-
 if __name__ == '__main__':
     ## You can change the directory names here if needed
     convert_images_to_grayscale(input_dir='Pictures', output_dir='Pictures_Grayscale')

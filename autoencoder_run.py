@@ -39,14 +39,14 @@ print("Model reloaded!")
 
 ## Verify model reload
 # OK image
-image_file = 'Pictures_Matched/grayscale_WIN_20250414_12_54_14_Pro.jpg'
+image_file = '/home/byungsoo/Documents/comparison/Pictures_Matched/grayscale_WIN_20250417_11_56_29_Pro.jpg'
 # NG image
 image_file = '/home/byungsoo/Documents/comparison/samples/defect_05.jpg'
 input_image = plt.imread(image_file)
 plt.imshow(input_image, cmap='gray')
 
 # Generate reconstructed image
-def reconstruct_image(input_image):
+def reconstruct_image(input_image, autoencoder):
     input = torch.tensor(input_image, dtype=torch.float32).unsqueeze(0).unsqueeze(0) / 255.0
     output = autoencoder(input)
     reconstructed_image = output.detach().numpy()
@@ -54,7 +54,7 @@ def reconstruct_image(input_image):
     reconstruction_error = torch.mean(torch.abs(output - input))
     return reconstructed_image, reconstruction_error
 
-reconstructed_image, reconstruction_error = reconstruct_image(input_image)
+reconstructed_image, reconstruction_error = reconstruct_image(input_image, autoencoder)
 
 plt.imshow(reconstructed_image, cmap='gray')
 
