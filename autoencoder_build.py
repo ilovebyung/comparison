@@ -1,6 +1,4 @@
 import os
-import cv2
-import numpy as np
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -9,16 +7,23 @@ from torch.utils.data import DataLoader, Dataset
 import matplotlib.pyplot as plt
 from PIL import Image
 
+# Check for GPU availability and set device
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+print(f"Using device: {device}")
+if device.type == 'cuda':
+    print(f"GPU: {torch.cuda.get_device_name(0)}")
+    print(f"Memory allocated: {torch.cuda.memory_allocated(0) / 1024**2:.2f} MB")
+
 # Define a dataset
 class Dataset(Dataset):
     """
     A PyTorch Dataset class to load grayscale images from a directory.
     """
-    def __init__(self, img_dir='Pictures_Grayscale', size=(1280, 720), transform=None):
+    def __init__(self, img_dir='images', size=(640, 640), transform=None):
         self.img_dir = img_dir
         self.size = size
         self.transform = transform if transform else transforms.Compose([
-            transforms.Resize(self.size),  # (1280, 720) (800,400)
+            transforms.Resize(self.size),
             transforms.ToTensor()
         ])
 
@@ -60,22 +65,24 @@ class Autoencoder(nn.Module):
 
 # Initialize dataset and dataloader
 # dataset = Dataset(img_dir='Pictures_Grayscale', size=(1280, 720))
-dataset = Dataset(img_dir='Pictures_Matched', size=(800,400))
-dataloader = DataLoader(dataset, batch_size=10, shuffle=True)
+dataset = Dataset(img_dir='numbers', size=(640, 640))
+dataloader = DataLoader(dataset, batch_size=10, shuffle=True, pin_memory=True if device.type == 'cuda' else False)
 
 # Initialize model, optimizer, and loss function
-autoencoder = Autoencoder()
+autoencoder = Autoencoder().to(device)  # Move model to GPU
 optimizer = optim.Adam(autoencoder.parameters(), lr=0.001)
 criterion = nn.MSELoss()
 
 # Training loop
 epoch_losses = []
+num_epochs = 20
 
-# Training loop
-num_epochs = 40
 for epoch in range(num_epochs):
     epoch_loss = 0.0
     for batch in dataloader:
+        # Move batch to GPU
+        batch = batch.to(device)
+        
         optimizer.zero_grad()
         reconstructed = autoencoder(batch)
         loss = criterion(reconstructed, batch)
@@ -83,8 +90,12 @@ for epoch in range(num_epochs):
         optimizer.step()
         epoch_loss += loss.item()
 
-    epoch_losses.append(epoch_loss)  # Save loss per epoch
+    epoch_losses.append(epoch_loss)
     print(f"Epoch [{epoch+1}/{num_epochs}], Loss: {epoch_loss:.4f}")
+    
+    # Optional: Print GPU memory usage
+    if device.type == 'cuda':
+        print(f"GPU Memory: {torch.cuda.memory_allocated(0) / 1024**2:.0f} MB")
 
 print("Training finished.")
 
@@ -97,22 +108,27 @@ plt.title("Training Loss Over Epochs")
 plt.grid(True)
 plt.show()
 
-
 # Function to visualize original vs. reconstructed images
 def visualize_results(model, dataloader, num_images=5):
-    model.eval()  # Set model to evaluation mode
-
-    with torch.no_grad():  # Disable gradient tracking
-        batch = next(iter(dataloader))  # Get a batch of images
-        reconstructed = model(batch)  # Pass images through the autoencoder
-
+    model.eval()
+    
+    with torch.no_grad():
+        batch = next(iter(dataloader))
+        # Move batch to GPU for inference
+        batch = batch.to(device)
+        reconstructed = model(batch)
+        
+        # Move tensors back to CPU for visualization
+        batch_cpu = batch.cpu()
+        reconstructed_cpu = reconstructed.cpu()
+        
         fig, axes = plt.subplots(num_images, 2, figsize=(8, num_images * 2))
         for i in range(num_images):
-            axes[i, 0].imshow(batch[i].squeeze().cpu().numpy(), cmap="gray")
+            axes[i, 0].imshow(batch_cpu[i].squeeze().numpy(), cmap="gray")
             axes[i, 0].set_title("Original")
             axes[i, 0].axis("off")
 
-            axes[i, 1].imshow(reconstructed[i].squeeze().cpu().numpy(), cmap="gray")
+            axes[i, 1].imshow(reconstructed_cpu[i].squeeze().numpy(), cmap="gray")
             axes[i, 1].set_title("Reconstructed")
             axes[i, 1].axis("off")
 
@@ -126,3 +142,7 @@ visualize_results(autoencoder, dataloader)
 torch.save(autoencoder.state_dict(), "autoencoder.pth")
 print("Model saved!")
 
+# Clean up GPU memory
+if device.type == 'cuda':
+    torch.cuda.empty_cache()
+    print("GPU memory cleared.")
