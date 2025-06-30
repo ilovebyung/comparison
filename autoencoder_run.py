@@ -41,7 +41,7 @@ print("Model reloaded!")
 # OK image
 image_file = '/home/byungsoo/Documents/comparison/Pictures_Matched/grayscale_WIN_20250417_11_56_29_Pro.jpg'
 # NG image
-image_file = '/home/byungsoo/Documents/comparison/samples/defect_05.jpg'
+image_file = '/home/byungsoo/Documents/comparison/numbers/9935_rot4.jpg'
 input_image = plt.imread(image_file)
 plt.imshow(input_image, cmap='gray')
 
