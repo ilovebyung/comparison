@@ -165,6 +165,27 @@ def check_difference(input_image, reconstructed_image):
     # difference = cv2.applyColorMap(difference, cv2.COLORMAP_MAGMA)
     return difference
 
+def extract_blue(input_image):
+    # Load the color image
+    image = cv2.imread(input_image)
+
+    # Convert the image to HSV color space
+    hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+
+    # Define the blue color range in HSV
+    lower_blue = np.array([100, 100, 50])
+    upper_blue = np.array([140, 255, 255])
+
+    # Create a binary mask where blue colors are white and the rest are black
+    mask = cv2.inRange(hsv, lower_blue, upper_blue)
+
+    # Convert the original image to grayscale
+    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+
+    # Apply the mask to the grayscale image
+    blue_area_gray = cv2.bitwise_and(gray, gray, mask=mask)
+    return blue_area_gray
+
 if __name__ == '__main__':
     ## You can change the directory names here if needed
     convert_images_to_grayscale(input_dir='Pictures', output_dir='Pictures_Grayscale')
@@ -186,6 +207,8 @@ if __name__ == '__main__':
             
     plt.imshow(result, cmap='gray')
 
+    image = extract_blue('blue.png')
+    plt.imshow(image, cmap='gray')
 
 
 
